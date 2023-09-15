@@ -1,26 +1,34 @@
 package com.shepherdmoney.interviewproject.controller;
 
+import com.shepherdmoney.interviewproject.model.User;
+import com.shepherdmoney.interviewproject.repository.UserRepository;
 import com.shepherdmoney.interviewproject.vo.request.CreateUserPayload;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UserController {
 
-    // TODO: wire in the user repository (~ 1 line)
+    @Autowired
+    private UserRepository userRepository;
 
-    @PutMapping("/user")
+    @PostMapping("/create")
     public ResponseEntity<Integer> createUser(@RequestBody CreateUserPayload payload) {
-        // TODO: Create an user entity with information given in the payload, store it in the database
-        //       and return the id of the user in 200 OK response
-        return null;
+        User newUser = new User();
+        newUser.setName(payload.getName());
+        newUser.setEmail(payload.getEmail());
+
+        userRepository.save(newUser);
+
+        return new ResponseEntity<>(newUser.getId(), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/user")
-    public ResponseEntity<String> deleteUser(@RequestParam int userId) {
-        // TODO: Return 200 OK if a user with the given ID exists, and the deletion is successful
-        //       Return 400 Bad Request if a user with the ID does not exist
-        //       The response body could be anything you consider appropriate
-        return null;
+    @GetMapping("/{userId}")
+    public ResponseEntity<User> getUserById(@PathVariable int userId) {
+        return userRepository.findById(userId)
+                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
